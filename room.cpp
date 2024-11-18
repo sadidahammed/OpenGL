@@ -1,5 +1,8 @@
 #include <windows.h>
 #include <GL/glut.h>
+#include <cmath>
+#include <time.h>
+#include <sstream>
 
 void adnan() {
     //ceiling
@@ -46,6 +49,86 @@ void adnan() {
     glVertex2d(1363, 560);
     glEnd();
 
+}
+
+void drawCircle(float x, float y, float radius, float red, float green, float blue) {
+    int segments = 100; // Higher value for a smoother circle
+    float angle;
+    x *= 19.2;
+    y *= 13.5;
+    glBegin(GL_POLYGON); // Keeps it as a line-based circle
+    glColor3f(red, green, blue); // Set the color dynamically
+    for (int i = 0; i < segments; i++) {
+        angle = 2.0f * M_PI * i / segments; // Calculate the angle
+        glVertex2f(x + cos(angle) * radius, y + sin(angle) * radius);
+    }
+    glEnd();
+}
+
+void drawNumber(float x, float y, int number) {
+    // Set text color to black
+    glColor3f(0.0f, 0.0f, 0.0f); // Black
+    x *= 19.2;
+    y *= 13.5;
+
+    std::stringstream ss;
+    ss << number;
+    std::string text = ss.str();
+
+    glRasterPos2f(x, y);        // Set position for the text
+
+    for (char c : text) {       // Render each character
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
+    }
+}
+
+void drawClock(float x, float y, float radius) {
+    x *= 19.2;
+    y *= 13.5;
+    // Get the current time
+    time_t t;
+    struct tm* localTime;
+    time(&t);
+    localTime = localtime(&t);
+
+    // Calculate the angles for hour, minute, and second hands
+    // Calculate the angle for the second hand (clockwise)
+    float secondAngle = localTime->tm_sec * 6.0f; // Keep it positive for clockwise rotation
+    float minuteAngle = localTime->tm_min * 6.0f + (localTime->tm_sec * 0.1f); // Minute hand with second hand adjustment
+    float hourAngle = (localTime->tm_hour % 12) * 30.0f + (localTime->tm_min * 0.5f); // Hour hand with minute hand adjustment
+
+    // Draw the clock hands at the specified position and radius
+    glColor3f(0.0f, 0.0f, 0.0f); // Black for the hands
+
+    // Hour hand
+    glPushMatrix();
+    glTranslatef(x, y, 0.0f); // Translate to clock center
+    glRotatef(hourAngle, 0.0f, 0.0f, 1.0f); // Rotate hour hand
+    glBegin(GL_LINES);
+    glVertex2f(0.0f, 0.0f);
+    glVertex2f(0.0f, radius * 0.5f); // Hour hand length
+    glEnd();
+    glPopMatrix();
+
+    // Minute hand
+    glPushMatrix();
+    glTranslatef(x, y, 0.0f); // Translate to clock center
+    glRotatef(minuteAngle, 0.0f, 0.0f, 1.0f); // Rotate minute hand
+    glBegin(GL_LINES);
+    glVertex2f(0.0f, 0.0f);
+    glVertex2f(0.0f, radius * 0.75f); // Minute hand length
+    glEnd();
+    glPopMatrix();
+
+    // Draw the second hand
+    glPushMatrix();
+    glTranslatef(x, y, 0.0f);
+    glRotatef(360.0f - secondAngle, 0.0f, 0.0f, 1.0f); // Subtract secondAngle from 360 to make it clockwise
+    glBegin(GL_LINES);
+    glVertex2f(0.0f, 0.0f);
+    glVertex2f(0.0f, radius); // Length of the second hand
+    glEnd();
+    glPopMatrix();
 }
 
 void sadid() {
@@ -309,7 +392,6 @@ void sadid() {
 
     glBegin(GL_POLYGON);
     glColor3f(0.898f, 0.737f, 0.518f);
-
     glVertex2d(x * 65, y * 17);
     glVertex2d(x * 66, y * 17);
     glVertex2d(x * 66, y * 18);
@@ -318,7 +400,6 @@ void sadid() {
 
     glBegin(GL_POLYGON);
     glColor3f(0.898f, 0.737f, 0.518f);
-
     glVertex2d(x * 64, y * 18);
     glVertex2d(x * 65, y * 18);
     glVertex2d(x * 65, y * 19);
@@ -327,12 +408,12 @@ void sadid() {
 
     glBegin(GL_POLYGON);
     glColor3f(0.533f, 0.071f, 0.176f);
-
     glVertex2d(x * 65, y * 18);
     glVertex2d(x * 66, y * 18);
     glVertex2d(x * 66, y * 19);
     glVertex2d(x * 65, y * 19);
     glEnd();
+
 
 
 
@@ -347,7 +428,17 @@ void sadid() {
    glVertex2d(x*,y*);
    glEnd();*/
 
-
+   //X, y , redious, color
+    drawCircle(93.0f, 60.0f, 65.0f, 0.733f, 0.510f, 0.224f);
+    drawCircle(93.0f, 60.0f, 50.0f, 1.0f, 1.0f, 1.0f);
+    drawNumber(90.6f, 59.5f, 9);
+    drawNumber(95.0f, 59.5f, 3);
+    drawNumber(92.7f, 56.5f, 6);
+    drawNumber(92.4f, 62.5f, 12);
+    drawClock(93.0f, 60.0f, 45.0f);
+    //Handel
+    drawCircle(90.0f, 36.0f, 10.0f, 0.733f, 0.510f, 0.224f);
+    drawCircle(92.0f, 35.8f, 10.0f, 0.733f, 0.510f, 0.224f);
 
 }
 
@@ -357,18 +448,24 @@ void display() {
     adnan();
     sadid();
 
+
     glFlush();
+}
+
+void update(int value) {
+    glutPostRedisplay();
+    glutTimerFunc(1000, update, 0); // Call update every 1000 milliseconds
 }
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
-
     glutInitWindowSize(1920, 1080);
     glutInitWindowPosition(0, 0);
     glutCreateWindow("Home interior Design");
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     gluOrtho2D(0, 1920, 0, 1080);
     glutDisplayFunc(display);
+    glutTimerFunc(1000, update, 0);
     glutMainLoop();
     return 0;
 }
